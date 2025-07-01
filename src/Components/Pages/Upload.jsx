@@ -40,7 +40,7 @@ export default function Upload() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-6 bg-base-100 rounded-xl shadow space-y-4">
+    <form onSubmit={handleSubmit} className="max-w-3xl mt-16 mx-auto p-6 bg-base-100 rounded-xl shadow space-y-4">
       <input
         type="text"
         placeholder="Title (optional)"
