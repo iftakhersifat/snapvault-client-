@@ -10,6 +10,10 @@ import Root from './Components/Root/Root.jsx';
 import Home from './Components/Pages/Home.jsx';
 import Upload from './Components/Pages/Upload.jsx';
 import MyUploads from './Components/Pages/MyUploads.jsx';
+import SignUp from './Components/Firebase/SignUp.jsx';
+import LogIn from './Components/Firebase/LogIn.jsx';
+import AuthProvider from './Components/Firebase/AuthProvider.jsx';
+import { Toaster } from 'react-hot-toast';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -18,12 +22,19 @@ const router = createBrowserRouter([
       {index: true, Component: Home},
       {path: "upload", Component: Upload},
       {path: "mymedia", Component: MyUploads},
+
+      // firebase
+      {path: "signup", Component:SignUp},
+      {path: "login", Component:LogIn},
     ]
   },
 ]);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <Toaster position="top-right" />
+        <RouterProvider router={router} />
+    </AuthProvider>  
   </StrictMode>,
 )
