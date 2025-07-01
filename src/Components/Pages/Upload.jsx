@@ -1,92 +1,75 @@
 import React, { useState } from 'react';
 
-const Upload = () => {
-  const [media, setMedia] = useState([]);
+export default function Upload() {
+  const [mediaFile, setMediaFile] = useState(null);
   const [title, setTitle] = useState('');
   const [type, setType] = useState('image');
-  const [isFolderUpload, setIsFolderUpload] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ title, type, media });
-    // You would handle actual file upload logic here
-  };
+    if (!mediaFile) return alert('Select a file');
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setMedia(files);
+    const formData = new FormData();
+    formData.append('media', mediaFile);
+    formData.append('title', title);
+    formData.append('type', type);
+    formData.append('isPrivate', isPrivate);
+
+    setUploading(true);
+
+    try {
+      const res = await fetch('http://localhost:3000/media', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+
+      alert('Upload successful');
+      setTitle('');
+      setType('image');
+      setMediaFile(null);
+      setIsPrivate(false);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
-    <div className="container mt-20 mx-auto bg-base-100 p-6 shadow rounded-xl max-w-2xl">
-      <h2 className="text-2xl font-bold mb-4 text-center">📤 Upload Your Media</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-
-        {/* Title */}
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-6 bg-base-100 rounded-xl shadow space-y-4">
+      <input
+        type="text"
+        placeholder="Title (optional)"
+        className="input input-bordered w-full"
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+      />
+      <select value={type} onChange={e => setType(e.target.value)} className="select select-bordered w-full">
+        <option value="image">Image</option>
+        <option value="video">Video</option>
+      </select>
+      <input
+        type="file"
+        accept={type === 'image' ? 'image/*' : 'video/*'}
+        className="file-input file-input-bordered w-full"
+        onChange={e => setMediaFile(e.target.files[0])}
+      />
+      <label className="label cursor-pointer">
         <input
-          type="text"
-          placeholder="Enter title"
-          className="input input-bordered w-full"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
+          type="checkbox"
+          checked={isPrivate}
+          onChange={e => setIsPrivate(e.target.checked)}
+          className="checkbox"
         />
-
-        {/* Media Type */}
-        <div className="flex items-center gap-4">
-          <label className="label">
-            <span className="label-text">Media Type:</span>
-          </label>
-          <select
-            className="select select-bordered flex-1"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-          >
-            <option value="image">Image</option>
-            <option value="video">Video</option>
-          </select>
-        </div>
-
-        {/* Folder Upload Toggle */}
-        <div className="form-control">
-          <label className="cursor-pointer label">
-            <span className="label-text">Upload a folder?</span>
-            <input
-              type="checkbox"
-              className="checkbox checkbox-primary"
-              checked={isFolderUpload}
-              onChange={() => setIsFolderUpload(!isFolderUpload)}
-            />
-          </label>
-        </div>
-
-        {/* File or Folder Input */}
-        <input
-          type="file"
-          accept={type === 'image' ? 'image/*' : 'video/*'}
-          className="file-input file-input-bordered w-full"
-          multiple
-          {...(isFolderUpload && { webkitdirectory: "true", directory: "true" })}
-          onChange={handleFileChange}
-        />
-
-        {/* Preview */}
-        {media.length > 0 && (
-          <div className="bg-gray-50 p-3 rounded-md border text-sm">
-            <strong>Selected {media.length > 1 ? "files" : "file"}:</strong>
-            <ul className="mt-1 list-disc list-inside text-gray-600 max-h-32 overflow-y-auto">
-              {media.map((file, index) => (
-                <li key={index}>{file.webkitRelativePath || file.name}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Submit Button */}
-        <button className="btn btn-primary w-full">Upload</button>
-      </form>
-    </div>
+        <span className="label-text ml-2">Make Private</span>
+      </label>
+      <button type="submit" className="btn btn-primary w-full" disabled={uploading}>
+        {uploading ? 'Uploading...' : 'Upload'}
+      </button>
+    </form>
   );
-};
-
-export default Upload;
+}

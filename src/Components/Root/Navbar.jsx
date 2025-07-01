@@ -54,6 +54,18 @@ const Navbar = () => {
               <FaUserAlt /> My Uploads
             </NavLink>
           </li>
+          <li>
+            <NavLink
+              to="/gallery"
+              className={({ isActive }) =>
+                isActive
+                  ? "text-blue-500 border-b-2 border-blue-500 pb-1 flex items-center gap-1"
+                  : "text-gray-600 hover:text-blue-400 flex items-center gap-1"
+              }
+            >
+              <FaUserAlt /> SnapGallery
+            </NavLink>
+          </li>
         </ul>
 
         {/* Login Button */}
@@ -61,7 +73,7 @@ const Navbar = () => {
           <Link to="/login" className="btn px-6 py-1 rounded-xl text-white bg-blue-500 hover:bg-blue-700 btn-outline  border-blue-500">
             Login
           </Link>
-          
+
         </div>
       </div>
     </nav>

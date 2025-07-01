@@ -14,6 +14,7 @@ import SignUp from './Components/Firebase/SignUp.jsx';
 import LogIn from './Components/Firebase/LogIn.jsx';
 import AuthProvider from './Components/Firebase/AuthProvider.jsx';
 import { Toaster } from 'react-hot-toast';
+import MediaGallery from './Components/Pages/MediaGallery.jsx';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
       {index: true, Component: Home},
       {path: "upload", Component: Upload},
       {path: "mymedia", Component: MyUploads},
+      {path: "gallery", Component: MediaGallery},
 
       // firebase
       {path: "signup", Component:SignUp},
