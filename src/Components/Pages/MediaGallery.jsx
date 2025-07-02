@@ -4,44 +4,114 @@ export default function MediaGallery() {
   const [mediaList, setMediaList] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchMedia = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:3000/media');
+      const data = await res.json();
+      setMediaList(data);
+    } catch (err) {
+      console.error('Failed to load media:', err);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetch('http://localhost:3000/media') // This route gives all public media
-      .then(res => res.json())
-      .then(data => {
-        setMediaList(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to load media:', err);
-        setLoading(false);
-      });
+    fetchMedia();
   }, []);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown date';
+    return new Date(dateString).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const handleDownload = async (item) => {
+    try {
+      const res = await fetch('http://localhost:3000/media/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mediaId: item._id }),
+      });
+
+      if (!res.ok) throw new Error('Failed to notify download');
+
+      await fetchMedia();
+
+      // Force file download with Content-Disposition header support
+      const response = await fetch(`http://localhost:3000${item.url}`);
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      const extension = item.type === 'image' ? 'jpg' : 'mp4';
+      link.download = item.title ? `${item.title}.${extension}` : `download.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download the file. Please try again.');
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-5 md:px-21 lg:px-0">
-      <h2 className="text-2xl font-bold mb-4">📸 Public Uploads</h2>
+    <div className="max-w-5xl mx-auto p-6 md:px-12 lg:px-0">
+      <h2 className="text-3xl font-extrabold mb-8 text-gray-900">📸 Public Uploads</h2>
 
       {loading ? (
-        <p>Loading media...</p>
+        <p className="text-gray-600 text-lg">Loading media...</p>
       ) : mediaList.length === 0 ? (
-        <p>No public media found.</p>
+        <p className="text-gray-500 text-lg">No public media found.</p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {mediaList.map((item) => (
-            <div key={item._id} className="p-2 border rounded shadow">
-              <p className="font-semibold truncate">{item.title}</p>
-              {item.type === 'image' ? (
-                <img
-                  src={`http://localhost:3000${item.url}`}
-                  alt={item.title}
-                  className="w-full h-48 object-cover rounded"
-                />
-              ) : (
-                <video controls className="w-full h-48 rounded">
-                  <source src={`http://localhost:3000${item.url}`} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              )}
+            <div
+              key={item._id}
+              className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-200 flex flex-col overflow-hidden"
+              title={item.title || 'Untitled'}
+            >
+              <div className="relative h-56 bg-gray-100">
+                {item.type === 'image' ? (
+                  <img
+                    src={`http://localhost:3000${item.url}`}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <video controls className="w-full h-full bg-black" preload="metadata">
+                    <source src={`http://localhost:3000${item.url}`} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                )}
+              </div>
+
+              <div className="p-4 flex flex-col flex-grow">
+                <h3 className="text-lg font-semibold mb-1 truncate">{item.title || 'Untitled'}</h3>
+
+                <p className="text-indigo-600 text-sm mb-1">
+                  Uploaded by <span className="font-medium">{item.uploaderName || 'Unknown'}</span>
+                </p>
+
+                <p className="text-gray-500 text-xs mb-1">{formatDate(item.createdAt)}</p>
+
+                <p className="text-gray-600 text-xs mb-1">Downloads: {item.downloadCount || 0}</p>
+
+                {item.type === 'video' && (
+                  <p className="text-gray-600 text-xs mb-3">Views: {item.viewCount || 0}</p>
+                )}
+
+                <button
+                  onClick={() => handleDownload(item)}
+                  className="mt-auto inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  title="Download"
+                >
+                  ⬇️ Download
+                </button>
+              </div>
             </div>
           ))}
         </div>
