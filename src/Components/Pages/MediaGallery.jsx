@@ -41,7 +41,6 @@ export default function MediaGallery() {
 
       await fetchMedia();
 
-      // Force file download with Content-Disposition header support
       const response = await fetch(`http://localhost:3000${item.url}`);
       const blob = await response.blob();
       const link = document.createElement('a');
@@ -59,7 +58,7 @@ export default function MediaGallery() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 md:px-12 lg:px-0">
-      <h2 className="text-3xl font-extrabold mb-8 text-gray-900">📸 Public Uploads</h2>
+      <h2 className="text-3xl font-extrabold mb-8 text-gray-900">📸 Snap Gallery</h2>
 
       {loading ? (
         <p className="text-gray-600 text-lg">Loading media...</p>
@@ -92,17 +91,9 @@ export default function MediaGallery() {
               <div className="p-4 flex flex-col flex-grow">
                 <h3 className="text-lg font-semibold mb-1 truncate">{item.title || 'Untitled'}</h3>
 
-                <p className="text-indigo-600 text-sm mb-1">
-                  Uploaded by <span className="font-medium">{item.uploaderName || 'Unknown'}</span>
-                </p>
-
                 <p className="text-gray-500 text-xs mb-1">{formatDate(item.createdAt)}</p>
 
-                <p className="text-gray-600 text-xs mb-1">Downloads: {item.downloadCount || 0}</p>
-
-                {item.type === 'video' && (
-                  <p className="text-gray-600 text-xs mb-3">Views: {item.viewCount || 0}</p>
-                )}
+                <p className="text-gray-600 text-xs mb-3">Downloads: {item.downloadCount || 0}</p>
 
                 <button
                   onClick={() => handleDownload(item)}
