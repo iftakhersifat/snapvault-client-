@@ -7,6 +7,7 @@ export default function MediaGallery() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const videoRefs = useRef([]);
 
+  // Fetch media from backend
   const fetchMedia = async () => {
     setLoading(true);
     try {
@@ -19,22 +20,32 @@ export default function MediaGallery() {
     setLoading(false);
   };
 
+  // Initial fetch
   useEffect(() => {
     fetchMedia();
   }, []);
 
+  // Group media by category (or fallback to Uncategorized)
+  const groupedMedia = mediaList.reduce((acc, item) => {
+    const category = item.category || 'Uncategorized';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(item);
+    return acc;
+  }, {});
+
+  // Scroll listener to show scroll-to-top button
   useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setShowScrollTop(window.scrollY > 300);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Scroll to top function
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Format date nicely
   const formatDate = (dateString) => {
     if (!dateString) return 'Unknown date';
     return new Date(dateString).toLocaleDateString(undefined, {
@@ -44,17 +55,21 @@ export default function MediaGallery() {
     });
   };
 
+  // Handle download of media
   const handleDownload = async (item) => {
     try {
+      // Notify backend of download
       const res = await fetch('http://localhost:3000/media/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mediaId: item._id }),
       });
-
       if (!res.ok) throw new Error('Failed to notify download');
+
+      // Refresh media list to update download count
       await fetchMedia();
 
+      // Download file
       const fileRes = await fetch(`http://localhost:3000${item.url}`);
       const blob = await fileRes.blob();
       const link = document.createElement('a');
@@ -70,12 +85,14 @@ export default function MediaGallery() {
     }
   };
 
+  // Pause other videos when one plays
   const handlePlay = (index) => {
     videoRefs.current.forEach((vid, i) => {
       if (vid && i !== index) vid.pause();
     });
   };
 
+  // Animation variants for framer-motion
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: (i) => ({
@@ -84,13 +101,6 @@ export default function MediaGallery() {
       transition: { delay: i * 0.1, duration: 0.5, type: 'spring' },
     }),
   };
-
-  const groupedMedia = mediaList.reduce((acc, item) => {
-    const folder = item.folder || 'Others';
-    if (!acc[folder]) acc[folder] = [];
-    acc[folder].push(item);
-    return acc;
-  }, {});
 
   return (
     <>
@@ -109,14 +119,14 @@ export default function MediaGallery() {
       `}</style>
 
       <div className="relative min-h-screen text-white animated-gradient-bg bg-[length:800%_800%]">
-        <div className="max-w-6xl mx-auto p-6 md:px-12 lg:px-0">
+        <div className="max-w-6xl mx-auto p-6 md:px-23 lg:px-0">
           <motion.h2
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-3xl font-extrabold mb-10"
           >
-            📁 Snap Gallery by Folders
+            📁 Snap Gallery
           </motion.h2>
 
           {loading ? (
@@ -124,10 +134,10 @@ export default function MediaGallery() {
           ) : mediaList.length === 0 ? (
             <p className="text-gray-300 text-lg">No public media found.</p>
           ) : (
-            Object.entries(groupedMedia).map(([folder, items]) => (
-              <div key={folder} className="mb-12">
+            Object.entries(groupedMedia).map(([category, items]) => (
+              <div key={category} className="mb-12">
                 <h3 className="text-2xl font-semibold mb-4 border-b border-indigo-500 pb-2">
-                  {folder}
+                  {category}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                   {items.map((item, i) => (

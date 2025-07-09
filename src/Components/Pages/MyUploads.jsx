@@ -129,7 +129,7 @@ export default function MyUploads() {
         }
       `}</style>
 
-      <div className="relative min-h-screen text-white animated-gradient-bg bg-[length:800%_800%] px-4 py-6">
+      <div className="relative min-h-screen text-white animated-gradient-bg bg-[length:800%_800%] px-4 py-6 p-6 md:px-23 lg:px-0">
         <Toaster position="top-right" />
         <div className="max-w-5xl mx-auto">
           <motion.h2

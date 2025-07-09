@@ -35,7 +35,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img src="/assets/snap-vault.png" alt="SnapVault Logo" className="h-10 w-auto object-contain" />
+          <img src="/assets/logo.png" alt="SnapVault Logo" className="h-8 w-auto object-contain" /><span className='text-xl text-orange-600 font-bold'>SnapGallery</span>
         </Link>
 
         {/* Desktop Nav */}
