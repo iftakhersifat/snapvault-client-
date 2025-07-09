@@ -114,135 +114,151 @@ export default function MyUploads() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 animate-gradient-slow text-white px-4 py-6">
-      <Toaster position="top-right" />
-      <div className="max-w-5xl mx-auto">
-        <motion.h2
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-3xl font-bold mb-6 text-center"
-        >
-          📁 My Uploads
-        </motion.h2>
+    <>
+      <style>{`
+        /* Animated gradient background */
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animated-gradient-bg {
+          background: linear-gradient(270deg, #1e3a8a, #6366f1, #ec4899, #f59e0b);
+          background-size: 800% 800%;
+          animation: gradientShift 20s ease infinite;
+        }
+      `}</style>
 
-        {loading ? (
-          <p className="text-center text-gray-300">Loading...</p>
-        ) : mediaList.length === 0 ? (
-          <p className="text-center text-gray-400">No uploads found.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {mediaList.map((item, i) => (
-              <motion.div
-                key={item._id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white text-black rounded-lg p-4 shadow-md border hover:shadow-xl transition duration-300 flex flex-col"
-              >
-                {editingId === item._id ? (
-                  <>
-                    <input
-                      type="text"
-                      value={editData.title}
-                      onChange={(e) =>
-                        setEditData({ ...editData, title: e.target.value })
-                      }
-                      className="input input-bordered w-full mb-2 px-2 py-1 border rounded"
-                    />
-                    <select
-                      value={editData.type}
-                      onChange={(e) =>
-                        setEditData({ ...editData, type: e.target.value })
-                      }
-                      className="select select-bordered w-full mb-2 px-2 py-1 border rounded"
-                    >
-                      <option value="image">Image</option>
-                      <option value="video">Video</option>
-                    </select>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="font-semibold truncate mb-2">{item.title}</h3>
-                    {item.type === 'image' ? (
-                      <img
-                        src={`http://localhost:3000${item.url}`}
-                        alt={item.title}
-                        className="w-full h-40 object-cover rounded"
-                      />
-                    ) : (
-                      <video
-                        controls
-                        className="w-full h-40 rounded bg-black"
-                        preload="metadata"
-                      >
-                        <source
-                          src={`http://localhost:3000${item.url}`}
-                          type="video/mp4"
-                        />
-                      </video>
-                    )}
-                  </>
-                )}
+      <div className="relative min-h-screen text-white animated-gradient-bg bg-[length:800%_800%] px-4 py-6">
+        <Toaster position="top-right" />
+        <div className="max-w-5xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-3xl font-bold mb-6 text-center"
+          >
+            📁 My Uploads
+          </motion.h2>
 
-                <div className="mt-3 flex flex-wrap gap-2 text-sm">
+          {loading ? (
+            <p className="text-center text-gray-300">Loading...</p>
+          ) : mediaList.length === 0 ? (
+            <p className="text-center text-gray-400">No uploads found.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {mediaList.map((item, i) => (
+                <motion.div
+                  key={item._id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="bg-white text-black rounded-lg p-4 shadow-md border hover:shadow-xl transition duration-300 flex flex-col"
+                >
                   {editingId === item._id ? (
                     <>
-                      <button
-                        className="btn btn-sm bg-green-600 text-white"
-                        onClick={() => saveEdit(item._id)}
-                        disabled={updatingId === item._id}
+                      <input
+                        type="text"
+                        value={editData.title}
+                        onChange={(e) =>
+                          setEditData({ ...editData, title: e.target.value })
+                        }
+                        className="input input-bordered w-full mb-2 px-2 py-1 border rounded"
+                      />
+                      <select
+                        value={editData.type}
+                        onChange={(e) =>
+                          setEditData({ ...editData, type: e.target.value })
+                        }
+                        className="select select-bordered w-full mb-2 px-2 py-1 border rounded"
                       >
-                        Save
-                      </button>
-                      <button
-                        className="btn btn-sm bg-yellow-500 text-white"
-                        onClick={cancelEdit}
-                      >
-                        Cancel
-                      </button>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                      </select>
                     </>
                   ) : (
                     <>
-                      <button
-                        className="btn btn-sm bg-blue-600 text-white"
-                        onClick={() => handleEdit(item)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-sm bg-red-600 text-white"
-                        onClick={() => handleDelete(item._id)}
-                      >
-                        Delete
-                      </button>
-                      <button
-                        className="btn btn-sm bg-gray-700 text-white"
-                        onClick={() => togglePrivacy(item._id, item.isPrivate)}
-                        disabled={updatingId === item._id}
-                      >
-                        {item.isPrivate ? 'Make Public' : 'Make Private'}
-                      </button>
+                      <h3 className="font-semibold truncate mb-2">{item.title}</h3>
+                      {item.type === 'image' ? (
+                        <img
+                          src={`http://localhost:3000${item.url}`}
+                          alt={item.title}
+                          className="w-full h-40 object-cover rounded"
+                        />
+                      ) : (
+                        <video
+                          controls
+                          className="w-full h-40 rounded bg-black"
+                          preload="metadata"
+                        >
+                          <source
+                            src={`http://localhost:3000${item.url}`}
+                            type="video/mp4"
+                          />
+                        </video>
+                      )}
                     </>
                   )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2 text-sm">
+                    {editingId === item._id ? (
+                      <>
+                        <button
+                          className="btn btn-sm bg-green-600 text-white"
+                          onClick={() => saveEdit(item._id)}
+                          disabled={updatingId === item._id}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="btn btn-sm bg-yellow-500 text-white"
+                          onClick={cancelEdit}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="btn btn-sm bg-blue-600 text-white"
+                          onClick={() => handleEdit(item)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn btn-sm bg-red-600 text-white"
+                          onClick={() => handleDelete(item._id)}
+                        >
+                          Delete
+                        </button>
+                        <button
+                          className="btn btn-sm bg-gray-700 text-white"
+                          onClick={() => togglePrivacy(item._id, item.isPrivate)}
+                          disabled={updatingId === item._id}
+                        >
+                          {item.isPrivate ? 'Make Public' : 'Make Private'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {showScroll && (
+          <motion.button
+            onClick={scrollToTop}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300"
+            title="Back to Top"
+          >
+            ↑
+          </motion.button>
         )}
       </div>
-
-      {showScroll && (
-        <motion.button
-          onClick={scrollToTop}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300"
-          title="Back to Top"
-        >
-          ↑
-        </motion.button>
-      )}
-    </div>
+    </>
   );
 }
