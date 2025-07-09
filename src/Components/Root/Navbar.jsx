@@ -19,7 +19,7 @@ const Navbar = () => {
   // Navigation items
   const navItems = [
     { to: '/', label: 'Home', icon: <FaHome /> },
-    { to: '/gallery', label: 'SnapGallery', icon: <FaImages /> },
+    // { to: '/gallery', label: 'SnapGallery', icon: <FaImages /> },
   ];
 
   if (user) {

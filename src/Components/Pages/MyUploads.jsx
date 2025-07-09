@@ -11,17 +11,21 @@ export default function MyUploads() {
   const [showScroll, setShowScroll] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:3000/my-uploads')
-      .then(res => res.json())
-      .then(data => {
-        setMediaList(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        toast.error('Failed to load media');
-        setLoading(false);
-      });
+    fetchMedia();
   }, []);
+
+  const fetchMedia = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:3000/my-uploads');
+      const data = await res.json();
+      setMediaList(data);
+    } catch (err) {
+      toast.error('Failed to load media');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => setShowScroll(window.scrollY > 300);
@@ -29,16 +33,16 @@ export default function MyUploads() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure to delete this item?')) return;
     try {
-      const res = await fetch(`http://localhost:3000/media/${id}`, { method: 'DELETE' });
+      const res = await fetch(`http://localhost:3000/media/${id}`, {
+        method: 'DELETE',
+      });
       if (res.ok) {
-        setMediaList(mediaList.filter(item => item._id !== id));
+        setMediaList(mediaList.filter((item) => item._id !== id));
         toast.success('Deleted successfully!');
       } else {
         toast.error('Delete failed');
@@ -57,9 +61,11 @@ export default function MyUploads() {
         body: JSON.stringify({ isPrivate: !currentPrivacy }),
       });
       if (res.ok) {
-        setMediaList(mediaList.map(item =>
-          item._id === id ? { ...item, isPrivate: !currentPrivacy } : item
-        ));
+        setMediaList(
+          mediaList.map((item) =>
+            item._id === id ? { ...item, isPrivate: !currentPrivacy } : item
+          )
+        );
         toast.success(currentPrivacy ? 'Made public' : 'Made private');
       } else {
         toast.error('Privacy update failed');
@@ -90,9 +96,11 @@ export default function MyUploads() {
         body: JSON.stringify(editData),
       });
       if (res.ok) {
-        setMediaList(mediaList.map(item =>
-          item._id === id ? { ...item, ...editData } : item
-        ));
+        setMediaList(
+          mediaList.map((item) =>
+            item._id === id ? { ...item, ...editData } : item
+          )
+        );
         cancelEdit();
         toast.success('Updated successfully');
       } else {
@@ -137,12 +145,16 @@ export default function MyUploads() {
                     <input
                       type="text"
                       value={editData.title}
-                      onChange={e => setEditData({ ...editData, title: e.target.value })}
+                      onChange={(e) =>
+                        setEditData({ ...editData, title: e.target.value })
+                      }
                       className="input input-bordered w-full mb-2 px-2 py-1 border rounded"
                     />
                     <select
                       value={editData.type}
-                      onChange={e => setEditData({ ...editData, type: e.target.value })}
+                      onChange={(e) =>
+                        setEditData({ ...editData, type: e.target.value })
+                      }
                       className="select select-bordered w-full mb-2 px-2 py-1 border rounded"
                     >
                       <option value="image">Image</option>
@@ -159,8 +171,15 @@ export default function MyUploads() {
                         className="w-full h-40 object-cover rounded"
                       />
                     ) : (
-                      <video controls className="w-full h-40 rounded bg-black">
-                        <source src={`http://localhost:3000${item.url}`} type="video/mp4" />
+                      <video
+                        controls
+                        className="w-full h-40 rounded bg-black"
+                        preload="metadata"
+                      >
+                        <source
+                          src={`http://localhost:3000${item.url}`}
+                          type="video/mp4"
+                        />
                       </video>
                     )}
                   </>
@@ -176,14 +195,27 @@ export default function MyUploads() {
                       >
                         Save
                       </button>
-                      <button className="btn btn-sm bg-yellow-500 text-white" onClick={cancelEdit}>
+                      <button
+                        className="btn btn-sm bg-yellow-500 text-white"
+                        onClick={cancelEdit}
+                      >
                         Cancel
                       </button>
                     </>
                   ) : (
                     <>
-                      <button className="btn btn-sm bg-blue-600 text-white" onClick={() => handleEdit(item)}>Edit</button>
-                      <button className="btn btn-sm bg-red-600 text-white" onClick={() => handleDelete(item._id)}>Delete</button>
+                      <button
+                        className="btn btn-sm bg-blue-600 text-white"
+                        onClick={() => handleEdit(item)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-sm bg-red-600 text-white"
+                        onClick={() => handleDelete(item._id)}
+                      >
+                        Delete
+                      </button>
                       <button
                         className="btn btn-sm bg-gray-700 text-white"
                         onClick={() => togglePrivacy(item._id, item.isPrivate)}
@@ -200,7 +232,6 @@ export default function MyUploads() {
         )}
       </div>
 
-      {/* Scroll to Top Button */}
       {showScroll && (
         <motion.button
           onClick={scrollToTop}

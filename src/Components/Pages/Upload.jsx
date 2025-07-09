@@ -6,23 +6,25 @@ export default function Upload() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [inputKey, setInputKey] = useState(Date.now());
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!mediaFiles.length) return alert('Select at least one file');
 
     const formData = new FormData();
-    for (let file of mediaFiles) {
+
+    mediaFiles.forEach(file => {
       formData.append('media', file);
-    }
+    });
+
+    // Send relative paths of each file as JSON string
+    const relativePaths = mediaFiles.map(f => f.webkitRelativePath || f.name);
+    formData.append('relativePaths', JSON.stringify(relativePaths));
 
     formData.append('title', title);
     formData.append('type', type);
     formData.append('isPrivate', isPrivate);
-
-    // extract common folder name if uploaded by folder
-    const folderName = mediaFiles[0]?.webkitRelativePath?.split('/')[0] || 'uploads';
-    formData.append('folder', folderName);
 
     setUploading(true);
     try {
@@ -37,6 +39,7 @@ export default function Upload() {
       setType('image');
       setIsPrivate(false);
       setMediaFiles([]);
+      setInputKey(Date.now());
     } catch (err) {
       alert('❌ ' + err.message);
     } finally {
@@ -45,10 +48,7 @@ export default function Upload() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-3xl mx-auto mt-16 p-8 bg-white dark:bg-gray-900 rounded-xl shadow-lg space-y-6 border border-gray-200 dark:border-gray-700"
-    >
+    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto mt-16 p-8 bg-white rounded-xl space-y-6 shadow-lg">
       <h2 className="text-3xl font-bold text-center">Upload Media</h2>
 
       <input
@@ -71,15 +71,17 @@ export default function Upload() {
 
       {type === 'folder' ? (
         <input
+          key={inputKey}
           type="file"
-          webkitdirectory="true"
-          directory="true"
           multiple
           className="file-input file-input-bordered w-full"
           onChange={(e) => setMediaFiles([...e.target.files])}
+          webkitdirectory="true"
+          directory=""
         />
       ) : (
         <input
+          key={inputKey}
           type="file"
           accept={type === 'image' ? 'image/*' : 'video/*'}
           className="file-input file-input-bordered w-full"
@@ -94,7 +96,7 @@ export default function Upload() {
           onChange={(e) => setIsPrivate(e.target.checked)}
           className="checkbox"
         />
-        <span className="label-text dark:text-white">Make Private</span>
+        <span className="label-text">Make Private</span>
       </label>
 
       <button
